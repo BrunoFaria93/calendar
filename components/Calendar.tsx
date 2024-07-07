@@ -10,9 +10,10 @@ import {
 import {Calendar} from 'react-native-calendars';
 import BottomSheet from './BottomSheet';
 import AsyncStorage from '@react-native-community/async-storage';
-import { formatDate } from '../utils/utils';
-import { ScheduleItem } from '../types/CalendarTypes';
-
+import {formatDate} from '../utils/utils';
+import {ScheduleItem} from '../types/CalendarTypes';
+import TimeZone from 'react-native-timezone';
+import { Globe04SVG, Trash01SVG } from './Icons';
 
 
 const MyCalendar: React.FC = () => {
@@ -22,6 +23,21 @@ const MyCalendar: React.FC = () => {
   const [scheduledTimes, setScheduledTimes] = useState<{
     [date: string]: ScheduleItem[];
   }>({});
+
+  const [deviceTimeZone, setDeviceTimeZone] = useState<string>('');
+
+  useEffect(() => {
+    const fetchTimeZone = async () => {
+      try {
+        const timezone = await TimeZone.getTimeZone();
+        setDeviceTimeZone(timezone);
+      } catch (error) {
+        console.error('Failed to fetch timezone', error);
+      }
+    };
+
+    fetchTimeZone();
+  }, []);
 
   useEffect(() => {
     const fetchSavedSchedules = async () => {
@@ -159,11 +175,7 @@ const MyCalendar: React.FC = () => {
     }
   };
 
-
-
   const renderScheduledTimes = () => {
-    console.log('Rendering scheduled times');
-
     if (Object.keys(scheduledTimes).length === 0) {
       return (
         <View style={styles.noScheduledTimesContainer}>
@@ -176,26 +188,24 @@ const MyCalendar: React.FC = () => {
     }
 
     return (
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView contentContainerStyle={{paddingHorizontal: 10}}>
         {Object.entries(scheduledTimes).map(([date, schedules]) => (
           <View key={date} style={styles.dateContainer}>
-            <View style={styles.dateCell}>
+            <View style={styles.dateHeader}>
               <Text style={styles.dateText}>{formatDate(date)}</Text>
-              <View style={styles.dateMiniContainer}>
+              <View style={styles.dateHoursContainer}>
                 {schedules.map((schedule, idx) => (
-                  <View key={idx} style={styles.dateHours}>
+                  <View key={idx} style={styles.flexRow}>
                     <View style={styles.card}>
                       <Text
                         style={
                           styles.cardText
-                        }>{`${schedule.startTime} - ${schedule.endTime}`}</Text>
+                        }>{`${schedule.startTime} ${schedule.startTime === "Unavailable" ? "": "-"} ${schedule.endTime}`}</Text>
                     </View>
-
-                    <TouchableOpacity onPress={() => handleDelete(date, idx)}>
-                      <Image
-                        source={require('../assets/trash.png')}
-                        style={styles.trash}
-                      />
+                    <TouchableOpacity
+                      style={styles.trashContainer}
+                      onPress={() => handleDelete(date, idx)}>
+                    <Trash01SVG color="#ec3713" height={15} width={15} />
                     </TouchableOpacity>
                   </View>
                 ))}
@@ -237,6 +247,14 @@ const MyCalendar: React.FC = () => {
           textDayHeaderFontSize: 16,
         }}
       />
+      <View style={styles.TimeZoneContainer}>
+        <Globe04SVG color="white" height={15} width={15} />
+
+        <Text style={styles.TimeZoneText}>{deviceTimeZone}</Text>
+      </View>
+      <View style={styles.flexRowPadding}>
+        <Text style={styles.TimeZoneText}>Availability for specific dates</Text>
+      </View>
       {renderScheduledTimes()}
       {bottomSheetVisible && (
         <BottomSheet
@@ -255,21 +273,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#060607',
     paddingVertical: 50,
     position: 'relative',
-  },
-  scrollContainer: {
-    paddingHorizontal: 16,
-    marginTop: 20,
-  },
-  cardContainer: {
-    marginTop: 20,
+    
   },
   card: {
     backgroundColor: '#2C2C2E',
     padding: 5,
-    marginBottom: 12,
-    marginRight: 12,
-    width: '50%',
-    display: "flex",
+    margin: 5,
+    marginLeft: 5,
+    width: '68%',
     borderRadius: 8,
     flexDirection: 'row',
     alignItems: 'center',
@@ -279,61 +290,79 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#8d8d92',
   },
-  noScheduledTimesContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  noScheduledTimesText: {
-    fontSize: 16,
-    color: '#F3F3F3',
-    paddingHorizontal: 14,
-    marginTop: 50,
-  },
-  dateContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 0,
-    alignContent: 'center',
-    width: '95%',
-    borderTopWidth: 0.5, 
-    borderTopColor: 'gray', 
-    borderBottomColor: 'gray', 
-  },
-  dateMiniContainer: {
-    display: 'flex',
-    paddingHorizontal: 10,
-    alignItems: 'center',
+  TimeZoneContainer: {
+    backgroundColor: '#2C2C2E',
+    display: "flex",
+    width: "100%",
+    flexDirection: "row",
     justifyContent: "center",
-    width: '95%',
-    flexDirection: 'column',
-    marginTop: 13
+    alignItems: "center",
+    padding: 10
   },
-  dateCell: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  TimeZoneText:{
+    marginLeft: 7,
+    color: "#f3f3f3",
   },
-  dateHours: {
-    display: 'flex',
-    flexDirection: 'row',
+  trashContainer: {
+    alignItems: 'center',
     justifyContent: 'center',
-    alignItems: "center"
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#d2d2d2',
-    marginRight: 10,
-    marginTop: 15,
-    fontWeight: 'bold',
-    marginBottom: 8,
   },
   trash: {
     height: 15,
     width: 15,
-    marginBottom: 8
+    margin: 5,
+    marginBottom: 3,
+    marginLeft: 10
+  },
+  dateContainer: {
+    flexDirection: 'column',
+    justifyContent: 'flex-start',
+    borderTopWidth: 0.5, 
+    padding: 10,
+    borderTopColor: 'gray', 
+    borderBottomColor: 'gray', 
+  },
+  dateHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#ffffff',
+    width: '30%',
+  },
+  dateHoursContainer: {
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    width: '70%',
+  },
+  noScheduledTimesContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+  },
+  flexRow: {
+  display: "flex",
+  flexDirection: "row",
+  justifyContent: "center" 
+ },
+ flexRowPadding: {
+  display: "flex",
+  flexDirection: "row",
+  justifyContent: "center",
+  padding: 10,
+  borderBottomWidth: 0.5, 
+  borderBottomColor: 'gray', 
+  
+ },
+  noScheduledTimesText: {
+    fontSize: 16,
+    color: '#8d8d92',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });
 

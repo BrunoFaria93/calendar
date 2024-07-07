@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -6,12 +6,13 @@ import {
   TouchableOpacity,
   FlatList,
   Switch,
+  Animated,
+  Easing,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { formatDate } from '../utils/utils';
 import { BottomSheetProps, ScheduleItem } from '../types/BottomSheetTypes';
-
-
+import { XCloseSVG } from './Icons';
 
 const BottomSheet: React.FC<BottomSheetProps> = ({
   onClose,
@@ -23,104 +24,48 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   const [selectedEndTime, setSelectedEndTime] = useState('08:00 pm');
   const [scheduledTimes, setScheduledTimes] = useState<ScheduleItem[]>([]);
 
-const timeSlots = [
-    '12:00 am',
-    '12:15 am',
-    '12:30 am',
-    '12:45 am',
-    '1:00 am',
-    '1:15 am',
-    '1:30 am',
-    '1:45 am',
-    '2:00 am',
-    '2:15 am',
-    '2:30 am',
-    '2:45 am',
-    '3:00 am',
-    '3:15 am',
-    '3:30 am',
-    '3:45 am',
-    '4:00 am',
-    '4:15 am',
-    '4:30 am',
-    '4:45 am',
-    '5:00 am',
-    '5:15 am',
-    '5:30 am',
-    '5:45 am',
-    '6:00 am',
-    '6:15 am',
-    '6:30 am',
-    '6:45 am',
-    '7:00 am',
-    '7:15 am',
-    '7:30 am',
-    '7:45 am',
-    '8:00 am',
-    '8:15 am',
-    '8:30 am',
-    '8:45 am',
-    '9:00 am',
-    '9:15 am',
-    '9:30 am',
-    '9:45 am',
-    '10:00 am',
-    '10:15 am',
-    '10:30 am',
-    '10:45 am',
-    '11:00 am',
-    '11:15 am',
-    '11:30 am',
-    '11:45 am',
-    '12:00 pm',
-    '12:15 pm',
-    '12:30 pm',
-    '12:45 pm',
-    '1:00 pm',
-    '1:15 pm',
-    '1:30 pm',
-    '1:45 pm',
-    '2:00 pm',
-    '2:15 pm',
-    '2:30 pm',
-    '2:45 pm',
-    '3:00 pm',
-    '3:15 pm',
-    '3:30 pm',
-    '3:45 pm',
-    '4:00 pm',
-    '4:15 pm',
-    '4:30 pm',
-    '4:45 pm',
-    '5:00 pm',
-    '5:15 pm',
-    '5:30 pm',
-    '5:45 pm',
-    '6:00 pm',
-    '6:15 pm',
-    '6:30 pm',
-    '6:45 pm',
-    '7:00 pm',
-    '7:15 pm',
-    '7:30 pm',
-    '7:45 pm',
-    '8:00 pm',
-    '8:15 pm',
-    '8:30 pm',
-    '8:45 pm',
-    '9:00 pm',
-    '9:15 pm',
-    '9:30 pm',
-    '9:45 pm',
-    '10:00 pm',
-    '10:15 pm',
-    '10:30 pm',
-    '10:45 pm',
-    '11:00 pm',
-    '11:15 pm',
-    '11:30 pm',
-    '11:45 pm',
-];
+  const [animation] = useState(new Animated.Value(0));
+
+  useEffect(() => {
+    Animated.timing(animation, {
+      toValue: 1,
+      duration: 200,
+      easing: Easing.ease,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const translateY = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [600, 0],
+  });
+
+  const timeSlots = [
+    '12:00 am', '12:15 am', '12:30 am', '12:45 am',
+    '1:00 am', '1:15 am', '1:30 am', '1:45 am',
+    '2:00 am', '2:15 am', '2:30 am', '2:45 am',
+    '3:00 am', '3:15 am', '3:30 am', '3:45 am',
+    '4:00 am', '4:15 am', '4:30 am', '4:45 am',
+    '5:00 am', '5:15 am', '5:30 am', '5:45 am',
+    '6:00 am', '6:15 am', '6:30 am', '6:45 am',
+    '7:00 am', '7:15 am', '7:30 am', '7:45 am',
+    '8:00 am', '8:15 am', '8:30 am', '8:45 am',
+    '9:00 am', '9:15 am', '9:30 am', '9:45 am',
+    '10:00 am', '10:15 am', '10:30 am', '10:45 am',
+    '11:00 am', '11:15 am', '11:30 am', '11:45 am',
+    '12:00 pm', '12:15 pm', '12:30 pm', '12:45 pm',
+    '1:00 pm', '1:15 pm', '1:30 pm', '1:45 pm',
+    '2:00 pm', '2:15 pm', '2:30 pm', '2:45 pm',
+    '3:00 pm', '3:15 pm', '3:30 pm', '3:45 pm',
+    '4:00 pm', '4:15 pm', '4:30 pm', '4:45 pm',
+    '5:00 pm', '5:15 pm', '5:30 pm', '5:45 pm',
+    '6:00 pm', '6:15 pm', '6:30 pm', '6:45 pm',
+    '7:00 pm', '7:15 pm', '7:30 pm', '7:45 pm',
+    '8:00 pm', '8:15 pm', '8:30 pm', '8:45 pm',
+    '9:00 pm', '9:15 pm', '9:30 pm', '9:45 pm',
+    '10:00 pm', '10:15 pm', '10:30 pm', '10:45 pm',
+    '11:00 pm', '11:15 pm', '11:30 pm', '11:45 pm',
+  ];
 
   useEffect(() => {
     const loadScheduledTimes = async () => {
@@ -131,6 +76,7 @@ const timeSlots = [
         if (storedTimes) {
           const parsedTimes: ScheduleItem[] = JSON.parse(storedTimes);
           setScheduledTimes(parsedTimes);
+          setUnavailable(parsedTimes.length === 0 ? true : false);
         }
       }
     };
@@ -139,25 +85,29 @@ const timeSlots = [
   }, [selectedDate]);
 
   const renderTimeItem = (item: string, isStartTime: boolean) => {
-    // Verifica se o item atual é o horário selecionado
     const isSelected = isStartTime
       ? selectedStartTime === item
       : selectedEndTime === item;
 
-    // Separa o horário (12:00) e o período (am/pm)
     const [time, period] = item.split(' ');
 
     return (
       <TouchableOpacity
-        style={[styles.timeItem, !isSelected && {backgroundColor: '#1C1C1E'}]}
+        style={[
+          styles.timeItem,
+          unavailable && { opacity: 0.2, backgroundColor: '#1C1C1E' },
+        ]}
         onPress={() =>
-          isStartTime ? setSelectedStartTime(item) : setSelectedEndTime(item)
+          !unavailable &&
+          (isStartTime
+            ? setSelectedStartTime(item)
+            : setSelectedEndTime(item))
         }>
         <Text
           style={[
             styles.timeItemText,
-            !isSelected && {color: '#CCCCCC'},
-            isSelected && {color: '#22c55e'},
+            !isSelected && { color: '#CCCCCC' },
+            isSelected && { color: '#22c55e' },
           ]}>
           {time}
         </Text>
@@ -165,8 +115,8 @@ const timeSlots = [
           style={[
             styles.timeItemText,
             styles.timePeriod,
-            !isSelected && {color: '#CCCCCC'},
-            isSelected && {color: '#22c55e'},
+            !isSelected && { color: '#CCCCCC' },
+            isSelected && { color: '#22c55e' },
           ]}>
           {period}
         </Text>
@@ -180,33 +130,28 @@ const timeSlots = [
         console.error('No selected date');
         return;
       }
-
-      const newSchedule: ScheduleItem = {
-        date: selectedDate,
-        startTime: selectedStartTime,
-        endTime: selectedEndTime,
-      };
-
-      // Recuperar agendamentos existentes para a data selecionada
-      const existingSchedules = await AsyncStorage.getItem(
-        `schedule_${selectedDate}`,
-      );
-      let schedules = existingSchedules ? JSON.parse(existingSchedules) : [];
-
-      // Verificar se já existe um agendamento para a data selecionada
-      const existingScheduleIndex = schedules.findIndex(
-        (item: any) => item.date === selectedDate,
-      );
-
-      if (existingScheduleIndex !== -1) {
-        // Se já existir um agendamento para esta data, adicione o novo horário ao array existente
-        schedules[existingScheduleIndex].times.push({
-          startTime: selectedStartTime,
-          endTime: selectedEndTime,
-        });
+  
+      console.log('Selected Date:', selectedDate);
+      console.log('Unavailable:', unavailable);
+  
+      if (unavailable) {
+        // Marca como unavailable
+        console.log('Marking as unavailable:', selectedDate);
+  
+        // Remove todos os horários agendados para o dia selecionado
+        const existingSchedules = await AsyncStorage.getItem('schedules');
+        let schedules = existingSchedules ? JSON.parse(existingSchedules) : {};
+  
+        delete schedules[selectedDate]; // Remove todos os horários para o dia selecionado
+  
+        await AsyncStorage.setItem('schedules', JSON.stringify(schedules));
+  
+        setScheduledTimes([]); // Define os horários como vazios, já que o dia está indisponível
+        onSave('Unavailable', ''); // Salva como indisponível
+  
+        console.log('Schedule removed, marked as unavailable:', selectedDate);
       } else {
-        // Se não existir nenhum agendamento para esta data, crie um novo item no array
-        schedules.push({
+        const newSchedule: ScheduleItem = {
           date: selectedDate,
           times: [
             {
@@ -214,84 +159,94 @@ const timeSlots = [
               endTime: selectedEndTime,
             },
           ],
-        });
+        };
+  
+        console.log('New Schedule to save:', newSchedule);
+  
+        // Salva os novos horários disponíveis
+        const existingSchedules = await AsyncStorage.getItem('schedules');
+        let schedules = existingSchedules ? JSON.parse(existingSchedules) : {};
+  
+        schedules[selectedDate] = newSchedule;
+  
+        await AsyncStorage.setItem('schedules', JSON.stringify(schedules));
+  
+        setScheduledTimes([newSchedule]);
+        onSave(selectedStartTime, selectedEndTime);
+  
+        console.log('New schedule saved:', newSchedule);
       }
-
-      // Salvar a lista atualizada no AsyncStorage
-      await AsyncStorage.setItem(
-        `schedule_${selectedDate}`,
-        JSON.stringify(schedules),
-      );
-
-      // Atualize o estado para exibir na UI
-      setScheduledTimes(schedules);
-
-      // Notifique o componente pai (MyCalendar) do novo agendamento
-      onSave(selectedStartTime, selectedEndTime);
-
-      // Feche o bottom sheet
+  
       onClose();
     } catch (error) {
       console.error('Failed to save schedule', error);
     }
   };
+  
+  
+  
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.largeView}>
-          <TouchableOpacity onPress={onClose} />
-          <View style={styles.closeButtonIcon} />
-        </View>
-        <View style={styles.largeView}>
-        <Text style={styles.title}>Set availability on {formatDate(selectedDate || "")}</Text>
-        <TouchableOpacity onPress={onClose}>
-          <Text style={styles.xButton}>X</Text>
-        </TouchableOpacity>
-        </View>
-
-
-        <View style={styles.bottomSheetContent}>
-          <Text style={styles.subtitle}>Start work by</Text>
-          <View style={styles.timeListContainer}>
-            <FlatList
-              data={timeSlots}
-              keyExtractor={item => item}
-              renderItem={({item}) => renderTimeItem(item, true)}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
-
-          <Text style={styles.subtitle}>End work by</Text>
-          <View style={styles.timeListContainer}>
-            <FlatList
-              data={timeSlots}
-              keyExtractor={item => item}
-              renderItem={({item}) => renderTimeItem(item, false)}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-            />
-          </View>
-
-          <View style={styles.unavailableRow}>
-            <Text style={styles.unavailableText}>
-              Unavailable to work this day
+    <>
+      <TouchableOpacity style={styles.transparent} onPress={onClose}>
+      </TouchableOpacity>
+      <Animated.View style={[styles.container, { transform: [{ translateY }] }]}>
+        <View style={styles.content}>
+          <View style={styles.largeView}>
+            <View style={styles.closeButtonIcon} />
+            <Text style={styles.title}>
+              Set availability on {formatDate(selectedDate || '')}
             </Text>
-            <Switch
-              value={unavailable}
-              onValueChange={value => setUnavailable(value)}
-            />
+            <View style={styles.closeX}>
+              <TouchableOpacity onPress={onClose}>
+                <XCloseSVG color="white" height={20} width={20} />
+              </TouchableOpacity>
+            </View>
           </View>
+          <View style={styles.bottomSheetContent}>
+            <Text style={styles.subtitle}>Start work by</Text>
+            <View style={styles.timeListContainer}>
+              <FlatList
+                data={timeSlots}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => renderTimeItem(item, true)}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              />
+            </View>
 
-          <TouchableOpacity style={styles.setTimeButton} onPress={handleSave}>
-            <Text style={styles.setTimeButtonText}>Set time</Text>
-          </TouchableOpacity>
+            <Text style={styles.subtitle}>End work by</Text>
+            <View style={styles.timeListContainer}>
+              <FlatList
+                data={timeSlots}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => renderTimeItem(item, false)}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+              />
+            </View>
+
+            <View style={styles.unavailableRow}>
+              <Text style={styles.unavailableText}>
+                Unavailable to work this day
+              </Text>
+              <Switch
+                value={unavailable}
+                trackColor={{ false: '#767577', true: '#22c55e' }}
+                onValueChange={(value) => setUnavailable(value)}
+              />
+            </View>
+
+            <TouchableOpacity style={styles.setTimeButton} onPress={handleSave}>
+              <Text style={styles.setTimeButtonText}>Save</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
-    </View>
+      </Animated.View>
+    </>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -299,12 +254,19 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#1C1C1E', // Fundo semi-transparente para destacar o BottomSheet
+    backgroundColor: '#1C1C1E', // Semi-transparent background to highlight BottomSheet
     padding: 16,
-    height: 520, // Aumenta a altura para 600 pixels
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     zIndex: 9999,
+  },
+  transparent: {
+    position: 'absolute',
+    top: 0,
+    backgroundColor: 'black',
+    opacity: 0.8,
+    height: 400,
+    width: '100%',
   },
   content: {
     backgroundColor: '#1C1C1E',
@@ -313,39 +275,43 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   largeView: {
-    display: "flex",
-    flexDirection: "row",
-    width: "100%",
-    justifyContent: "center",
-    alignItems: "center"
+    position: 'relative',
+    paddingBottom: 20,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'gray',
   },
   closeButton: {
-    alignSelf: 'center',
-    width: 40,
-    height: 5,
-    backgroundColor: '#CCCCCC',
-    borderRadius: 5,
+    position: 'absolute',
+    right: 0,
   },
   xButton: {
     color: '#CCCCCC',
     textAlign: 'right',
     marginTop: 15,
-    marginLeft: 125,
+    marginLeft: 115,
     fontSize: 16,
   },
+  closeX: {
+    position: 'absolute',
+    right: 0,
+    top: 30,
+  },
   closeButtonIcon: {
-    width: 30,
+    position: 'absolute',
+    right: '45%',
+    width: 45,
     height: 5,
     backgroundColor: '#CCCCCC',
     borderRadius: 5,
     marginTop: 2,
-    marginBottom: 20
+    marginBottom: 20,
   },
   title: {
     fontSize: 18,
+    marginTop: 30,
     color: '#CCCCCC',
-    textAlign: 'center',
-    marginTop: 16,
+    textAlign: 'left',
+    fontWeight: 'bold',
   },
   subtitle: {
     fontSize: 16,
@@ -377,7 +343,7 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
   },
   timePeriod: {
-    fontSize: 14,
+    fontSize: 16,
     marginTop: -6,
     color: '#CCCCCC',
   },
