@@ -242,14 +242,22 @@ const MyCalendar: React.FC = () => {
         </View>
       );
     }
-
+  
+    // Obter todas as datas e ordená-las
+    const sortedDates = Object.keys(scheduledTimes).sort((a, b) => {
+      const dateA = new Date(a);
+      const dateB = new Date(b);
+      return dateA.getTime() - dateB.getTime();
+    });
+  
     return (
       <ScrollView contentContainerStyle={{paddingHorizontal: 10}}>
-        {Object.entries(scheduledTimes).map(([date, schedules]) => {
+        {sortedDates.map(date => {
+          const schedules = scheduledTimes[date];
           const hasUnavailableTime = schedules.some(
             schedule => schedule.startTime === 'Unavailable',
           );
-
+  
           return (
             <View key={date} style={styles.dateContainer}>
               <View style={styles.dateHeader}>
@@ -291,6 +299,7 @@ const MyCalendar: React.FC = () => {
       </ScrollView>
     );
   };
+  
 
   return (
     <View style={styles.container}>
@@ -353,7 +362,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2C2C2E',
     padding: 5,
     margin: 5,
-    marginLeft: 5,
+    marginRight: 10,
     width: '68%',
     borderRadius: 8,
     flexDirection: 'row',
@@ -405,6 +414,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#ffffff',
     width: '30%',
+    marginTop: 5
   },
   dateHoursContainer: {
     flexDirection: 'column',
