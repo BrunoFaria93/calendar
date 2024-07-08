@@ -3457,7 +3457,7 @@ __metadata:
     prettier: 2.8.8
     react: 18.2.0
     react-native: 0.74.3
-    react-native-calendars: ^1.1305.0
+    react-native-calendars: latest
     react-native-gesture-handler: ^2.17.1
     react-native-reanimated: ^3.13.0
     react-native-svg: ^15.3.0
@@ -9256,7 +9256,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-calendars@npm:^1.1305.0":
+"react-native-calendars@npm:latest":
   version: 1.1305.0
   resolution: "react-native-calendars@npm:1.1305.0"
   dependencies:
