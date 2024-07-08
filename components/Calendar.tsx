@@ -13,8 +13,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import {formatDate} from '../utils/utils';
 import {ScheduleItem} from '../types/CalendarTypes';
 import TimeZone from 'react-native-timezone';
-import { Globe04SVG, Trash01SVG } from './Icons';
-
+import {Globe04SVG, Trash01SVG} from './Icons';
 
 const MyCalendar: React.FC = () => {
   const [markedDates, setMarkedDates] = useState<{[date: string]: any}>({});
@@ -64,8 +63,6 @@ const MyCalendar: React.FC = () => {
           }
         });
 
-        console.log('Fetched schedules:', scheduledTimesData); // Debugging
-
         setMarkedDates(markedDatesData);
         setScheduledTimes(scheduledTimesData);
       } catch (error) {
@@ -97,8 +94,6 @@ const MyCalendar: React.FC = () => {
           }
         });
 
-        console.log('Updated schedules:', scheduledTimesData); // Debugging
-
         setScheduledTimes(scheduledTimesData);
       } catch (error) {
         console.error('Failed to update scheduled times', error);
@@ -120,25 +115,49 @@ const MyCalendar: React.FC = () => {
         return;
       }
 
-      const newSchedule: ScheduleItem = {startTime, endTime};
+      let savedSchedules: ScheduleItem[] = [];
 
-      let savedSchedules: ScheduleItem[] = scheduledTimes[selectedDate] || [];
+      // Se estiver adicionando "Unavailable", limpa todos os horários existentes
+      if (startTime === 'Unavailable') {
+        savedSchedules = [{startTime: 'Unavailable', endTime: ''}];
 
-      savedSchedules.push(newSchedule);
+        // Remove qualquer entrada existente para este dia
+        await AsyncStorage.removeItem(`schedule_${selectedDate}`);
 
-      await AsyncStorage.setItem(
-        `schedule_${selectedDate}`,
-        JSON.stringify(savedSchedules),
-      );
+        const updatedMarkedDates = {...markedDates};
+        updatedMarkedDates[selectedDate] = {marked: true, dotColor: '#00FF00'};
+        setMarkedDates(updatedMarkedDates);
 
-      const updatedMarkedDates = {...markedDates};
-      updatedMarkedDates[selectedDate] = {marked: true, dotColor: '#00FF00'};
-      setMarkedDates(updatedMarkedDates);
+        setScheduledTimes(prev => ({
+          ...prev,
+          [selectedDate]: savedSchedules,
+        }));
+      } else {
+        // Remove qualquer entrada "Unavailable" existente
+        savedSchedules = (scheduledTimes[selectedDate] || []).filter(
+          schedule => schedule.startTime !== 'Unavailable',
+        );
 
-      setScheduledTimes(prev => ({
-        ...prev,
-        [selectedDate]: savedSchedules,
-      }));
+        // Adiciona o novo horário
+        const newSchedule: ScheduleItem = {startTime, endTime};
+        savedSchedules.push(newSchedule);
+
+        // Salva no AsyncStorage
+        await AsyncStorage.setItem(
+          `schedule_${selectedDate}`,
+          JSON.stringify(savedSchedules),
+        );
+
+        // Atualiza marcadores e horários
+        const updatedMarkedDates = {...markedDates};
+        updatedMarkedDates[selectedDate] = {marked: true, dotColor: '#00FF00'};
+        setMarkedDates(updatedMarkedDates);
+
+        setScheduledTimes(prev => ({
+          ...prev,
+          [selectedDate]: savedSchedules,
+        }));
+      }
 
       setBottomSheetVisible(false);
     } catch (error) {
@@ -148,11 +167,47 @@ const MyCalendar: React.FC = () => {
 
   const handleDelete = async (date: string, index: number) => {
     try {
+      // Verifica se a data está marcada como "Unavailable"
+      if (scheduledTimes[date]?.[0]?.startTime === 'Unavailable') {
+        // Remove a entrada completa para esta data
+        await AsyncStorage.removeItem(`schedule_${date}`);
+
+        // Remove a data dos marcadores e horários programados
+        const updatedMarkedDates = {...markedDates};
+        delete updatedMarkedDates[date];
+        setMarkedDates(updatedMarkedDates);
+
+        const updatedScheduledTimes = {...scheduledTimes};
+        delete updatedScheduledTimes[date];
+        setScheduledTimes(updatedScheduledTimes);
+
+        return; // Retorna após a remoção completa da data
+      }
+
+      // Verifica se scheduledTimes[date] existe e tem pelo menos um item
+      if (!scheduledTimes[date] || scheduledTimes[date].length === 0) {
+        // Se não houver horários agendados para esta data, remove completamente
+        await AsyncStorage.removeItem(`schedule_${date}`);
+
+        const updatedMarkedDates = {...markedDates};
+        delete updatedMarkedDates[date];
+        setMarkedDates(updatedMarkedDates);
+
+        const updatedScheduledTimes = {...scheduledTimes};
+        delete updatedScheduledTimes[date];
+        setScheduledTimes(updatedScheduledTimes);
+
+        return;
+      }
+
+      // Remove o horário específico do array
       const updatedSchedules = [...scheduledTimes[date]];
       updatedSchedules.splice(index, 1);
 
       if (updatedSchedules.length === 0) {
+        // Se não houver mais horários, remove a entrada completa para esta data
         await AsyncStorage.removeItem(`schedule_${date}`);
+
         const updatedMarkedDates = {...markedDates};
         delete updatedMarkedDates[date];
         setMarkedDates(updatedMarkedDates);
@@ -161,6 +216,7 @@ const MyCalendar: React.FC = () => {
         delete updatedScheduledTimes[date];
         setScheduledTimes(updatedScheduledTimes);
       } else {
+        // Atualiza os horários restantes para esta data
         await AsyncStorage.setItem(
           `schedule_${date}`,
           JSON.stringify(updatedSchedules),
@@ -189,30 +245,49 @@ const MyCalendar: React.FC = () => {
 
     return (
       <ScrollView contentContainerStyle={{paddingHorizontal: 10}}>
-        {Object.entries(scheduledTimes).map(([date, schedules]) => (
-          <View key={date} style={styles.dateContainer}>
-            <View style={styles.dateHeader}>
-              <Text style={styles.dateText}>{formatDate(date)}</Text>
-              <View style={styles.dateHoursContainer}>
-                {schedules.map((schedule, idx) => (
-                  <View key={idx} style={styles.flexRow}>
-                    <View style={styles.card}>
-                      <Text
-                        style={
-                          styles.cardText
-                        }>{`${schedule.startTime} ${schedule.startTime === "Unavailable" ? "": "-"} ${schedule.endTime}`}</Text>
+        {Object.entries(scheduledTimes).map(([date, schedules]) => {
+          const hasUnavailableTime = schedules.some(
+            schedule => schedule.startTime === 'Unavailable',
+          );
+
+          return (
+            <View key={date} style={styles.dateContainer}>
+              <View style={styles.dateHeader}>
+                <Text style={styles.dateText}>{formatDate(date)}</Text>
+                <View style={styles.dateHoursContainer}>
+                  {schedules.length === 0 ? (
+                    <View style={styles.flexRow}>
+                      <View style={styles.card}>
+                        <Text style={styles.cardText}>Unavailable</Text>
+                      </View>
+                      <TouchableOpacity
+                        style={styles.trashContainer}
+                        onPress={() => handleDelete(date, 0)} // assuming only one "Unavailable" entry per day
+                      >
+                        <Trash01SVG color="#ec3713" height={15} width={15} />
+                      </TouchableOpacity>
                     </View>
-                    <TouchableOpacity
-                      style={styles.trashContainer}
-                      onPress={() => handleDelete(date, idx)}>
-                    <Trash01SVG color="#ec3713" height={15} width={15} />
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                  ) : (
+                    schedules.map((schedule, idx) => (
+                      <View key={idx} style={styles.flexRow}>
+                        <View style={styles.card}>
+                          <Text style={styles.cardText}>
+                            {`${schedule.startTime} - ${schedule.endTime}`}
+                          </Text>
+                        </View>
+                        <TouchableOpacity
+                          style={styles.trashContainer}
+                          onPress={() => handleDelete(date, idx)}>
+                          <Trash01SVG color="#ec3713" height={15} width={15} />
+                        </TouchableOpacity>
+                      </View>
+                    ))
+                  )}
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </ScrollView>
     );
   };
@@ -273,7 +348,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#060607',
     paddingVertical: 50,
     position: 'relative',
-    
   },
   card: {
     backgroundColor: '#2C2C2E',
@@ -292,16 +366,16 @@ const styles = StyleSheet.create({
   },
   TimeZoneContainer: {
     backgroundColor: '#2C2C2E',
-    display: "flex",
-    width: "100%",
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 10
+    display: 'flex',
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
   },
-  TimeZoneText:{
+  TimeZoneText: {
     marginLeft: 7,
-    color: "#f3f3f3",
+    color: '#f3f3f3',
   },
   trashContainer: {
     alignItems: 'center',
@@ -312,15 +386,15 @@ const styles = StyleSheet.create({
     width: 15,
     margin: 5,
     marginBottom: 3,
-    marginLeft: 10
+    marginLeft: 10,
   },
   dateContainer: {
     flexDirection: 'column',
     justifyContent: 'flex-start',
-    borderTopWidth: 0.5, 
+    borderTopWidth: 0.5,
     padding: 10,
-    borderTopColor: 'gray', 
-    borderBottomColor: 'gray', 
+    borderTopColor: 'gray',
+    borderBottomColor: 'gray',
   },
   dateHeader: {
     flexDirection: 'row',
@@ -345,19 +419,18 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   flexRow: {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "center" 
- },
- flexRowPadding: {
-  display: "flex",
-  flexDirection: "row",
-  justifyContent: "center",
-  padding: 10,
-  borderBottomWidth: 0.5, 
-  borderBottomColor: 'gray', 
-  
- },
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  flexRowPadding: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    padding: 10,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'gray',
+  },
   noScheduledTimesText: {
     fontSize: 16,
     color: '#8d8d92',

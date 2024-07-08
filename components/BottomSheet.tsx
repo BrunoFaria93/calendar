@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -10,9 +10,9 @@ import {
   Easing,
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import { formatDate } from '../utils/utils';
-import { BottomSheetProps, ScheduleItem } from '../types/BottomSheetTypes';
-import { XCloseSVG } from './Icons';
+import {formatDate} from '../utils/utils';
+import {BottomSheetProps, ScheduleItem} from '../types/BottomSheetTypes';
+import {XCloseSVG} from './Icons';
 
 const BottomSheet: React.FC<BottomSheetProps> = ({
   onClose,
@@ -41,30 +41,102 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
   });
 
   const timeSlots = [
-    '12:00 am', '12:15 am', '12:30 am', '12:45 am',
-    '1:00 am', '1:15 am', '1:30 am', '1:45 am',
-    '2:00 am', '2:15 am', '2:30 am', '2:45 am',
-    '3:00 am', '3:15 am', '3:30 am', '3:45 am',
-    '4:00 am', '4:15 am', '4:30 am', '4:45 am',
-    '5:00 am', '5:15 am', '5:30 am', '5:45 am',
-    '6:00 am', '6:15 am', '6:30 am', '6:45 am',
-    '7:00 am', '7:15 am', '7:30 am', '7:45 am',
-    '8:00 am', '8:15 am', '8:30 am', '8:45 am',
-    '9:00 am', '9:15 am', '9:30 am', '9:45 am',
-    '10:00 am', '10:15 am', '10:30 am', '10:45 am',
-    '11:00 am', '11:15 am', '11:30 am', '11:45 am',
-    '12:00 pm', '12:15 pm', '12:30 pm', '12:45 pm',
-    '1:00 pm', '1:15 pm', '1:30 pm', '1:45 pm',
-    '2:00 pm', '2:15 pm', '2:30 pm', '2:45 pm',
-    '3:00 pm', '3:15 pm', '3:30 pm', '3:45 pm',
-    '4:00 pm', '4:15 pm', '4:30 pm', '4:45 pm',
-    '5:00 pm', '5:15 pm', '5:30 pm', '5:45 pm',
-    '6:00 pm', '6:15 pm', '6:30 pm', '6:45 pm',
-    '7:00 pm', '7:15 pm', '7:30 pm', '7:45 pm',
-    '8:00 pm', '8:15 pm', '8:30 pm', '8:45 pm',
-    '9:00 pm', '9:15 pm', '9:30 pm', '9:45 pm',
-    '10:00 pm', '10:15 pm', '10:30 pm', '10:45 pm',
-    '11:00 pm', '11:15 pm', '11:30 pm', '11:45 pm',
+    '12:00 am',
+    '12:15 am',
+    '12:30 am',
+    '12:45 am',
+    '1:00 am',
+    '1:15 am',
+    '1:30 am',
+    '1:45 am',
+    '2:00 am',
+    '2:15 am',
+    '2:30 am',
+    '2:45 am',
+    '3:00 am',
+    '3:15 am',
+    '3:30 am',
+    '3:45 am',
+    '4:00 am',
+    '4:15 am',
+    '4:30 am',
+    '4:45 am',
+    '5:00 am',
+    '5:15 am',
+    '5:30 am',
+    '5:45 am',
+    '6:00 am',
+    '6:15 am',
+    '6:30 am',
+    '6:45 am',
+    '7:00 am',
+    '7:15 am',
+    '7:30 am',
+    '7:45 am',
+    '8:00 am',
+    '8:15 am',
+    '8:30 am',
+    '8:45 am',
+    '9:00 am',
+    '9:15 am',
+    '9:30 am',
+    '9:45 am',
+    '10:00 am',
+    '10:15 am',
+    '10:30 am',
+    '10:45 am',
+    '11:00 am',
+    '11:15 am',
+    '11:30 am',
+    '11:45 am',
+    '12:00 pm',
+    '12:15 pm',
+    '12:30 pm',
+    '12:45 pm',
+    '1:00 pm',
+    '1:15 pm',
+    '1:30 pm',
+    '1:45 pm',
+    '2:00 pm',
+    '2:15 pm',
+    '2:30 pm',
+    '2:45 pm',
+    '3:00 pm',
+    '3:15 pm',
+    '3:30 pm',
+    '3:45 pm',
+    '4:00 pm',
+    '4:15 pm',
+    '4:30 pm',
+    '4:45 pm',
+    '5:00 pm',
+    '5:15 pm',
+    '5:30 pm',
+    '5:45 pm',
+    '6:00 pm',
+    '6:15 pm',
+    '6:30 pm',
+    '6:45 pm',
+    '7:00 pm',
+    '7:15 pm',
+    '7:30 pm',
+    '7:45 pm',
+    '8:00 pm',
+    '8:15 pm',
+    '8:30 pm',
+    '8:45 pm',
+    '9:00 pm',
+    '9:15 pm',
+    '9:30 pm',
+    '9:45 pm',
+    '10:00 pm',
+    '10:15 pm',
+    '10:30 pm',
+    '10:45 pm',
+    '11:00 pm',
+    '11:15 pm',
+    '11:30 pm',
+    '11:45 pm',
   ];
 
   useEffect(() => {
@@ -95,19 +167,17 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
       <TouchableOpacity
         style={[
           styles.timeItem,
-          unavailable && { opacity: 0.2, backgroundColor: '#1C1C1E' },
+          unavailable && {opacity: 0.2, backgroundColor: '#1C1C1E'},
         ]}
         onPress={() =>
           !unavailable &&
-          (isStartTime
-            ? setSelectedStartTime(item)
-            : setSelectedEndTime(item))
+          (isStartTime ? setSelectedStartTime(item) : setSelectedEndTime(item))
         }>
         <Text
           style={[
             styles.timeItemText,
-            !isSelected && { color: '#CCCCCC' },
-            isSelected && { color: '#22c55e' },
+            !isSelected && {color: '#CCCCCC'},
+            isSelected && {color: '#22c55e'},
           ]}>
           {time}
         </Text>
@@ -115,8 +185,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
           style={[
             styles.timeItemText,
             styles.timePeriod,
-            !isSelected && { color: '#CCCCCC' },
-            isSelected && { color: '#22c55e' },
+            !isSelected && {color: '#CCCCCC'},
+            isSelected && {color: '#22c55e'},
           ]}>
           {period}
         </Text>
@@ -130,26 +200,18 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
         console.error('No selected date');
         return;
       }
-  
-      console.log('Selected Date:', selectedDate);
-      console.log('Unavailable:', unavailable);
-  
+
+      const existingSchedules = await AsyncStorage.getItem('schedules');
+      let schedules = existingSchedules ? JSON.parse(existingSchedules) : {};
+
       if (unavailable) {
-        // Marca como unavailable
-        console.log('Marking as unavailable:', selectedDate);
-  
         // Remove todos os horários agendados para o dia selecionado
-        const existingSchedules = await AsyncStorage.getItem('schedules');
-        let schedules = existingSchedules ? JSON.parse(existingSchedules) : {};
-  
-        delete schedules[selectedDate]; // Remove todos os horários para o dia selecionado
-  
+        delete schedules[selectedDate];
+
         await AsyncStorage.setItem('schedules', JSON.stringify(schedules));
-  
+
         setScheduledTimes([]); // Define os horários como vazios, já que o dia está indisponível
         onSave('Unavailable', ''); // Salva como indisponível
-  
-        console.log('Schedule removed, marked as unavailable:', selectedDate);
       } else {
         const newSchedule: ScheduleItem = {
           date: selectedDate,
@@ -160,37 +222,28 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             },
           ],
         };
-  
-        console.log('New Schedule to save:', newSchedule);
-  
+
         // Salva os novos horários disponíveis
-        const existingSchedules = await AsyncStorage.getItem('schedules');
-        let schedules = existingSchedules ? JSON.parse(existingSchedules) : {};
-  
         schedules[selectedDate] = newSchedule;
-  
+
         await AsyncStorage.setItem('schedules', JSON.stringify(schedules));
-  
+
         setScheduledTimes([newSchedule]);
         onSave(selectedStartTime, selectedEndTime);
-  
-        console.log('New schedule saved:', newSchedule);
       }
-  
+
       onClose();
     } catch (error) {
       console.error('Failed to save schedule', error);
     }
   };
-  
-  
-  
 
   return (
     <>
-      <TouchableOpacity style={styles.transparent} onPress={onClose}>
-      </TouchableOpacity>
-      <Animated.View style={[styles.container, { transform: [{ translateY }] }]}>
+      <TouchableOpacity
+        style={styles.transparent}
+        onPress={onClose}></TouchableOpacity>
+      <Animated.View style={[styles.container, {transform: [{translateY}]}]}>
         <View style={styles.content}>
           <View style={styles.largeView}>
             <View style={styles.closeButtonIcon} />
@@ -208,8 +261,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             <View style={styles.timeListContainer}>
               <FlatList
                 data={timeSlots}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => renderTimeItem(item, true)}
+                keyExtractor={item => item}
+                renderItem={({item}) => renderTimeItem(item, true)}
                 horizontal
                 showsHorizontalScrollIndicator={false}
               />
@@ -219,8 +272,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
             <View style={styles.timeListContainer}>
               <FlatList
                 data={timeSlots}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => renderTimeItem(item, false)}
+                keyExtractor={item => item}
+                renderItem={({item}) => renderTimeItem(item, false)}
                 horizontal
                 showsHorizontalScrollIndicator={false}
               />
@@ -232,8 +285,8 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
               </Text>
               <Switch
                 value={unavailable}
-                trackColor={{ false: '#767577', true: '#22c55e' }}
-                onValueChange={(value) => setUnavailable(value)}
+                trackColor={{false: '#767577', true: '#22c55e'}}
+                onValueChange={value => setUnavailable(value)}
               />
             </View>
 
@@ -246,7 +299,6 @@ const BottomSheet: React.FC<BottomSheetProps> = ({
     </>
   );
 };
-
 
 const styles = StyleSheet.create({
   container: {
